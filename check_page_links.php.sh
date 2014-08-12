@@ -73,7 +73,6 @@ foreach($links as $link) {
 print 'Valid Links ' . count($valid_links) . ": ";
 print 'Broken Links ' . count($broken_links) . ": ";
 print 'Redirected Links ' . count($redirected_links) . ": ";
-print 'Duration ' . floor((microtime(true) - $start_time) * 100) / 100 . 's: ';
 
 // If there is at least one good link and no bad links we are happy.
 if (count($valid_links) && !count($broken_links)) {
