@@ -65,7 +65,9 @@ foreach($links as $link) {
         case 3  : $redirected_links[] = $response_url;
                   break;
         default : $broken_links[] = $attribute_value->value;
-        echo $response_code . " - " .$attribute_value->value . "\n";
+
+        // This would be a good place for a debug flag.
+        // echo $response_code . " - " .$attribute_value->value . "\n";
       }
     }
   }
