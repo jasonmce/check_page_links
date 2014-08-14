@@ -31,7 +31,7 @@ $domDoc->preserveWhiteSpace = false;
  * If page fails to load return CRITICAL.
  */
 if(!@$domDoc->loadHTMLFile($url)) {
- return $STATE_CRITICAL;
+ exit($STATE_CRITICAL);
 }
 
 $xpath = new DOMXpath($domDoc);
@@ -39,7 +39,7 @@ $links = $xpath->query('//a | //area');
 
 // If page fails to load return UNKNOWN.
 if (!count($links)) {
-  return $STATE_UNKNOWN;
+  exit($STATE_UNKNOWN);
 }
 
 foreach($links as $link) {
@@ -76,14 +76,14 @@ print 'Broken Links ' . count($broken_links) . ": ";
 // If there is at least one good link and no bad links we are happy.
 if (count($valid_links) && !count($broken_links)) {
   print "result is OK\n";
-  return $STATE_OK;
+  exit($STATE_OK);
 }
 // If there were at least good links, return a warning
 if (count($valid_links)) {
   print "result is WARNING\n";
-  return $STATE_WARNING;
+  exit($STATE_WARNING);
 }
 
 print "result is CRITICAL\n";
 // Otherwise we've only got broken links.
-return $STATE_CRITICAL;
+exit($STATE_CRITICAL);
