@@ -44,7 +44,8 @@ if (!count($links)) {
 
 foreach($links as $link) {
   foreach($link->attributes as $attribute_name=>$attribute_value) {
-    if('href' == $attribute_name) {
+    if('href' == $attribute_name &&
+        strncmp('mailto:', $attribute_value->value, 7)) {
       // To test the link we may need to prepend http:// and the current path.
       $preface = (!strncmp('http', $attribute_value->value, 4)) ? '' : "$url/";
       $ch = curl_init($preface . $attribute_value->value);
@@ -64,6 +65,7 @@ foreach($links as $link) {
         case 3  : $redirected_links[] = $response_url;
                   break;
         default : $broken_links[] = $attribute_value->value;
+        echo $response_code . " - " .$attribute_value->value . "\n";
       }
     }
   }
