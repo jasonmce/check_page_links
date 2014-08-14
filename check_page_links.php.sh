@@ -22,8 +22,7 @@ $url = "http://" . $argv[1];
 $valid_links      = array();
 $redirected_links = array();
 $broken_links     = array();
-$failure_codes    = array('308', '404');
- 
+
 $domDoc = new DOMDocument;
 $domDoc->preserveWhiteSpace = false;
 
@@ -35,9 +34,8 @@ if(!@$domDoc->loadHTMLFile($url)) {
  return $STATE_CRITICAL;
 }
 
-$links = $domDoc->getElementsByTagName('a');
 $xpath = new DOMXpath($domDoc);
-$NOT_pagelinks = $xpath->query('//a|//area');
+$links = $xpath->query('//a | //area');
 
 // If page fails to load return UNKNOWN.
 if (!count($links)) {
@@ -56,13 +54,14 @@ foreach($links as $link) {
       $response_url   = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
       curl_close($ch);
 
-      // Check the response.
-      if(in_array($response_code, $failure_codes)) {
-        $broken_links[]     = array('link'=>$attribute_value->value);
-      } elseif ($response_url != $attribute_value->value) {
-        $redirected_links[] = array('link'=>$attribute_value->value, 'redirect'=>$response_url);
-      } else {
-        $valid_links[]    = array('link'=>$attribute_value->value);
+      // Check response using www.w3.org/Protocols/rfc2616/rfc2616-sec10.html.
+      switch(intval($response_code / 100)) {
+        case 1  :
+        case 2  : $valid_links[] = $attribute_value->value;
+                  break;
+        case 3  : $redirected_links[] = $response_url;
+                  break;
+        default : $broken_links[] = $attribute_value->value;
       }
     }
   }
@@ -71,8 +70,8 @@ foreach($links as $link) {
 // Output results as text.
 // @todo Convert this to printf for performance?
 print 'Valid Links ' . count($valid_links) . ": ";
-print 'Broken Links ' . count($broken_links) . ": ";
 print 'Redirected Links ' . count($redirected_links) . ": ";
+print 'Broken Links ' . count($broken_links) . ": ";
 
 // If there is at least one good link and no bad links we are happy.
 if (count($valid_links) && !count($broken_links)) {
