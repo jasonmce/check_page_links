@@ -46,7 +46,7 @@ foreach($links as $link) {
   foreach($link->attributes as $attribute_name=>$attribute_value) {
     if('href' == $attribute_name) {
       // To test the link we may need to prepend http:// and the current path.
-      $preface = (0 == strncmp('http',$attribute_value->value, 4)) ? '' : "http://$url/";
+      $preface = (!strncmp('http', $attribute_value->value, 4)) ? '' : "$url/";
       $ch = curl_init($preface . $attribute_value->value);
       curl_setopt($ch, CURLOPT_NOBODY, true);
       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -64,7 +64,6 @@ foreach($links as $link) {
         case 3  : $redirected_links[] = $response_url;
                   break;
         default : $broken_links[] = $attribute_value->value;
-        echo $response_code . " - " .$attribute_value->value . "\n";
       }
     }
   }
