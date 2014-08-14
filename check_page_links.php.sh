@@ -37,7 +37,7 @@ if(!@$domDoc->loadHTMLFile($url)) {
 $xpath = new DOMXpath($domDoc);
 $links = $xpath->query('//a | //area');
 
-// If page fails to load return UNKNOWN.
+// If page lacks any links return UNKNOWN.
 if (!count($links)) {
   exit($STATE_UNKNOWN);
 }
