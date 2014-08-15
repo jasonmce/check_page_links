@@ -54,7 +54,13 @@ foreach($links as $link) {
       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
       curl_exec($ch);
       $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-      $response_url   = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+      if (405 == $response_code) {
+        curl_setopt($ch, CURLOPT_NOBODY, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_exec($ch);
+        $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      }
+      $response_url  = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
       curl_close($ch);
 
       // Check response using www.w3.org/Protocols/rfc2616/rfc2616-sec10.html.
