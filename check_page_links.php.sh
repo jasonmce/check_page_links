@@ -54,7 +54,16 @@ foreach($links as $link) {
       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
       curl_exec($ch);
       $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      // Could be refusal to respond to CURLOPT_NOBODY, like amazon.com does.
       if (405 == $response_code) {
+        curl_setopt($ch, CURLOPT_BUFFERSIZE, 64);
+        curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function(
+            $clientp, $dltotal, $dlnow, $ultotal, $ulnow
+        ){
+            // Returning non-0 breaks the connection.
+            return $dlnow;
+        });
         curl_setopt($ch, CURLOPT_NOBODY, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_exec($ch);
