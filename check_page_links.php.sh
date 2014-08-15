@@ -42,6 +42,11 @@ if (!count($links)) {
   exit($STATE_UNKNOWN);
 }
 
+// Returning non-0 breaks the connection.
+function progress_watcher($clientp, $dltotal, $dlnow, $ultotal, $ulnow) {
+  return $dlnow;
+}
+
 foreach($links as $link) {
   foreach($link->attributes as $attribute_name=>$attribute_value) {
     if('href' == $attribute_name &&
@@ -58,12 +63,7 @@ foreach($links as $link) {
       if (405 == $response_code) {
         curl_setopt($ch, CURLOPT_BUFFERSIZE, 64);
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function(
-            $clientp, $dltotal, $dlnow, $ultotal, $ulnow
-        ){
-            // Returning non-0 breaks the connection.
-            return $dlnow;
-        });
+        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'progress_watcher');
         curl_setopt($ch, CURLOPT_NOBODY, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_exec($ch);
