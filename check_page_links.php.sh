@@ -63,7 +63,9 @@ foreach($links as $link) {
       if (405 == $response_code) {
         curl_setopt($ch, CURLOPT_BUFFERSIZE, 64);
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'progress_watcher');
+        $xfer_param = (NULL != CURLOPT_PROGRESSFUNCTION) ? CURLOPT_PROGRESSFUNCTION : CURLOPT_XFERINFOFUNCTION;
+
+        curl_setopt($ch, $xfer_param, 'progress_watcher');
         curl_setopt($ch, CURLOPT_NOBODY, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_exec($ch);
