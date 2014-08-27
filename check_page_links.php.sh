@@ -57,29 +57,22 @@ foreach($links as $link) {
       curl_setopt($ch, CURLOPT_NOBODY, true);
       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
       curl_exec($ch);
-      $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-      // Could be refusal to respond to CURLOPT_NOBODY, like amazon.com does.
-      if (405 == $response_code) {
-        curl_setopt($ch, CURLOPT_BUFFERSIZE, 64);
-        curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'progress_watcher');
-        curl_setopt($ch, CURLOPT_NOBODY, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_exec($ch);
-        $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-      }
       $response_url  = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+      $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
 
       // Check response using www.w3.org/Protocols/rfc2616/rfc2616-sec10.html.
-      switch(intval($response_code / 100)) {
-        case 1  :
-        case 2  : $valid_links[] = $attribute_value->value;
-                  break;
-        case 3  : $redirected_links[] = $response_url;
-                  break;
-        default : $broken_links[] = $attribute_value->value;
+      // 405 is just a snobbish 200 in my book.
+      if ($response_code < 299  || $response_code == 405) {
+        $valid_links[] = $attribute_value->value;
+      }
+      elseif ($response_code < 399) {
+        $redirected_links[] = $response_url;
+      }
+      else {
+        $broken_links[] = $attribute_value->value;
 
         // This would be a good place for a debug flag.
         // echo $response_code . " - " .$attribute_value->value . "\n";
