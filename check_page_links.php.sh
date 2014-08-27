@@ -10,15 +10,15 @@ $STATE_CRITICAL = 2;
 $STATE_UNKNOWN = 3;
 $STATE_DEPENDENT = 4;
 
-if (empty($argv)) {
+
+$options = getopt("H:t::", array("threshold::"));
+if (empty($options['H'])) {
   print "Requires an URL to check.\n";
   return $STATE_UNKNOWN;
 }
 
 // t or threshold
-$options = getopt("H:t::", array("threshold::"));
-print_r($options);
-$threshold = max($options['t'], $options['threshold']);
+$threshold = @max($options['t'], $options['threshold']);
 
 // @todo Should be an an argument for http vs https.
 $url = "http://" . $options['H'];
