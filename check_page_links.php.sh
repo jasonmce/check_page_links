@@ -11,7 +11,7 @@ $STATE_UNKNOWN = 3;
 $STATE_DEPENDENT = 4;
 
 
-$options = @getopt("H:t::");
+$options = @getopt("H:t:");
 if (empty($options['H'])) {
   print "Requires an URL to check.\n";
   return $STATE_UNKNOWN;
