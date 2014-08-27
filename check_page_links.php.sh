@@ -15,8 +15,13 @@ if (empty($argv)) {
   return $STATE_UNKNOWN;
 }
 
+// t or threshold
+$options = getopt("H:t::", array("threshold::"));
+print_r($options);
+$threshold = max($options['t'], $options['threshold']);
+
 // @todo Should be an an argument for http vs https.
-$url = "http://" . $argv[1];
+$url = "http://" . $options['H'];
 
 // Doing these as arrays in case I want to recurse later.
 $valid_links      = array();
@@ -88,7 +93,7 @@ print 'Redirected Links ' . count($redirected_links) . ": ";
 print 'Broken Links ' . count($broken_links) . ": ";
 
 // If there is at least one good link and no bad links we are happy.
-if (count($valid_links) && !count($broken_links)) {
+if (count($valid_links) && count($broken_links) <= $threshold) {
   print "result is OK\n";
   exit($STATE_OK);
 }
