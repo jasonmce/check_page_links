@@ -18,7 +18,7 @@ if (empty($options['H'])) {
 }
 
 // t for threshold
-$threshold = intval($options['t']);
+$threshold = (isset($options['t']) ? intval($options['t']) : 0);
 
 // @todo Should be an an argument for http vs https.
 $url = "http://" . $options['H'];
