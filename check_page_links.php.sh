@@ -92,11 +92,12 @@ print 'Valid Links ' . count($valid_links) . ": ";
 print 'Redirected Links ' . count($redirected_links) . ": ";
 print 'Broken Links ' . count($broken_links) . ": ";
 
-// If there is at least one good link and no bad links we are happy.
-if (count($valid_links) && count($broken_links) <= $threshold) {
+// If bad links are below the threshold, we are content.
+if (count($broken_links) <= $threshold) {
   print "result is OK\n";
   exit($STATE_OK);
 }
+
 // If there were at least good links, return a warning
 if (count($valid_links)) {
   print "result is WARNING\n";
