@@ -1,7 +1,12 @@
 #!/usr/bin/php
 <?php
+/**
+ * @file
+ * Nagios scriplet check_page_links.php.sh to check links.
+ */
+
 // @todo Add a timeout parameter.
-$start_time = microtime(true);
+$start_time = microtime(TRUE);
 
 // @todo Load these from an include file.
 $STATE_OK = 0;
@@ -11,13 +16,14 @@ $STATE_UNKNOWN = 3;
 $STATE_DEPENDENT = 4;
 
 
-$options = @getopt("H:t:");
+$options = @getopt("H:t:v:");
 if (empty($options['H'])) {
   print "Requires an URL to check.\n";
+  print "options are -H hostname -t THRESHOLD -v VERBOSE_OUTPUT\n";
   return $STATE_UNKNOWN;
 }
 
-// t for threshold
+// Argument t for threshold.
 $threshold = (isset($options['t']) ? intval($options['t']) : 0);
 
 // @todo Should be an an argument for http vs https.
@@ -29,14 +35,14 @@ $redirected_links = array();
 $broken_links     = array();
 
 $domDoc = new DOMDocument;
-$domDoc->preserveWhiteSpace = false;
+$domDoc->preserveWhiteSpace = FALSE;
 
 /**
  * Errors are suppressed so DOMDocument does not whine about XHTML.
  * If page fails to load return CRITICAL.
  */
 if(!@$domDoc->loadHTMLFile($url)) {
- exit($STATE_CRITICAL);
+  exit($STATE_CRITICAL);
 }
 
 $xpath = new DOMXpath($domDoc);
@@ -53,15 +59,16 @@ function progress_watcher($clientp, $dltotal, $dlnow, $ultotal, $ulnow) {
 }
 
 foreach($links as $link) {
-  foreach($link->attributes as $attribute_name=>$attribute_value) {
-    if('href' == $attribute_name &&
-        strncmp('mailto:', $attribute_value->value, 7)) {
+  foreach ($link->attributes as $attribute_name => $attribute_value) {
+    if ('href' == $attribute_name &&
+        strncmp('mailto:', $attribute_value->value, 7) &&
+        strncmp('tel:', $attribute_value->value, 4)) {
       // To test the link we may need to prepend http:// and the current path.
       $preface = (!strncmp('http', $attribute_value->value, 4)) ? '' : "$url/";
       $ch = curl_init($preface . $attribute_value->value);
-      curl_setopt($ch, CURLOPT_NOBODY, true);
-      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-      curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+      curl_setopt($ch, CURLOPT_NOBODY, TRUE);
+      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+      curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
 
       curl_exec($ch);
       $response_url  = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
@@ -88,9 +95,16 @@ foreach($links as $link) {
 
 // Output results as text.
 // @todo Convert this to printf for performance?
-print 'Valid Links ' . count($valid_links) . ": ";
-print 'Redirected Links ' . count($redirected_links) . ": ";
-print 'Broken Links ' . count($broken_links) . ": ";
+if (empty($options['v'])) {
+  print 'Valid Links ' . count($valid_links) . ": ";
+  print 'Redirected Links ' . count($redirected_links) . ": ";
+  print 'Broken Links ' . count($broken_links) . ": ";
+}
+else {
+  print "Valid links:\n" . print_r($valid_links, 1);
+  print "\n\nRedirected links:\n" . print_r($redirected_links, 1);
+  print "\n\nBroken links:\n" . print_r($broken_links, 1);
+}
 
 // If bad links are below the threshold, we are content.
 if (count($broken_links) <= $threshold) {
