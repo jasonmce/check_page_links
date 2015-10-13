@@ -62,7 +62,8 @@ foreach($links as $link) {
   foreach ($link->attributes as $attribute_name => $attribute_value) {
     if ('href' == $attribute_name &&
         strncmp('mailto:', $attribute_value->value, 7) &&
-        strncmp('tel:', $attribute_value->value, 4)) {
+        strncmp('tel:', $attribute_value->value, 4) &&
+        strncmp('#', $attribute_value->value, 1)) {
       // To test the link we may need to prepend http:// and the current path.
       $preface = (!strncmp('http', $attribute_value->value, 4)) ? '' : "$url/";
       $ch = curl_init($preface . $attribute_value->value);
