@@ -9,56 +9,54 @@
 $start_time = microtime(TRUE);
 
 // @todo Load these from an include file.
-$STATE_OK = 0;
-$STATE_WARNING = 1;
-$STATE_CRITICAL = 2;
-$STATE_UNKNOWN = 3;
-$STATE_DEPENDENT = 4;
+const STATE_OK = 0;
+const STATE_WARNING = 1;
+const STATE_CRITICAL = 2;
+const STATE_UNKNOWN = 3;
+const STATE_DEPENDENT = 4;
 
 
-$options = @getopt("H:t:v:");
+$options = @getopt("H:t:v:s:");
 if (empty($options['H'])) {
   print "Requires an URL to check.\n";
-  print "options are -H hostname -t THRESHOLD -v VERBOSE_OUTPUT\n";
-  return $STATE_UNKNOWN;
+  print "options are -H hostname -t THRESHOLD -v VERBOSE_OUTPUT -s SSL(optional)\n";
+  return STATE_UNKNOWN;
 }
 
 // Argument t for threshold.
 $threshold = (isset($options['t']) ? intval($options['t']) : 0);
 
-// @todo Should be an an argument for http vs https.
-$url = "http://" . $options['H'];
+$protocol = (!empty($options['s'])) ? "https" : "http";
+$url = $protocol . "://" . $options['H'];
+
+echo "url is " . $url;
 
 // Doing these as arrays in case I want to recurse later.
 $valid_links      = array();
 $redirected_links = array();
 $broken_links     = array();
 
-$domDoc = new DOMDocument;
-$domDoc->preserveWhiteSpace = FALSE;
+$dom_doc = new DOMDocument();
+$dom_doc->preserveWhiteSpace = FALSE;
 
 /**
  * Errors are suppressed so DOMDocument does not whine about XHTML.
+ *
  * If page fails to load return CRITICAL.
  */
-if(!@$domDoc->loadHTMLFile($url)) {
-  exit($STATE_CRITICAL);
+if (!@$dom_doc->loadHTMLFile($url)) {
+  exit(STATE_CRITICAL);
 }
 
-$xpath = new DOMXpath($domDoc);
+$xpath = new DOMXpath($dom_doc);
 $links = $xpath->query('//a | //area');
 
 // If page lacks any links return UNKNOWN.
 if (!count($links)) {
-  exit($STATE_UNKNOWN);
+  exit(STATE_UNKNOWN);
 }
 
-// Returning non-0 breaks the connection.
-function progress_watcher($clientp, $dltotal, $dlnow, $ultotal, $ulnow) {
-  return $dlnow;
-}
-
-foreach($links as $link) {
+foreach ($links as $link) {
   foreach ($link->attributes as $attribute_name => $attribute_value) {
     if ('href' == $attribute_name &&
         strncmp('mailto:', $attribute_value->value, 7) &&
@@ -110,15 +108,15 @@ else {
 // If bad links are below the threshold, we are content.
 if (count($broken_links) <= $threshold) {
   print "result is OK\n";
-  exit($STATE_OK);
+  exit(STATE_OK);
 }
 
-// If there were at least good links, return a warning
+// If there were at least good links, return a warning.
 if (count($valid_links)) {
   print "result is WARNING\n";
-  exit($STATE_WARNING);
+  exit(STATE_WARNING);
 }
 
 print "result is CRITICAL\n";
 // Otherwise we've only got broken links.
-exit($STATE_CRITICAL);
+exit(STATE_CRITICAL);
