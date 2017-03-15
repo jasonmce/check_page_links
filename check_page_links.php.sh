@@ -43,6 +43,7 @@ $dom_doc->preserveWhiteSpace = FALSE;
  * If page fails to load return CRITICAL.
  */
 if (!@$dom_doc->loadHTMLFile($url)) {
+  echo "Unable to load $url, exiting STATE_CRITICAL";
   exit(STATE_CRITICAL);
 }
 
@@ -50,7 +51,8 @@ $xpath = new DOMXpath($dom_doc);
 $links = $xpath->query('//a | //area');
 
 // If page lacks any links return UNKNOWN.
-if (!count($links)) {
+if (!is_array($links) || !count($links)) {
+  echo "No links found on $url, exiting STATE_UNKNOWN";
   exit(STATE_UNKNOWN);
 }
 
@@ -104,17 +106,19 @@ else {
 }
 
 // If bad links are below the threshold, we are content.
-if (count($broken_links) <= $threshold) {
-  print "result is OK\n";
+$num_broken_links = count($broken_links);
+if ($num_broken_links <= $threshold) {
+  print "Broken link count {$num_broken_links} is below threshold ${$threshold}, result is OK\n";
   exit(STATE_OK);
 }
 
 // If there were at least good links, return a warning.
-if (count($valid_links)) {
-  print "result is WARNING\n";
+$num_valid_links = count($valid_links);
+if ($num_valid_links) {
+  print "Found {$num_valid_links} valid and ${$num_broken_links} broken links, result is WARNING\n";
   exit(STATE_WARNING);
 }
 
-print "result is CRITICAL\n";
+print "No valid and ${$num_broken_links} broken links found, result is CRITICAL\n";
 // Otherwise we've only got broken links.
 exit(STATE_CRITICAL);
