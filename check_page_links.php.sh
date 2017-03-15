@@ -9,11 +9,11 @@
 $start_time = microtime(TRUE);
 
 // @todo Load these from an include file.
-const STATE_OK = 0;
-const STATE_WARNING = 1;
-const STATE_CRITICAL = 2;
-const STATE_UNKNOWN = 3;
-const STATE_DEPENDENT = 4;
+define(STATE_OK, 0);
+define(STATE_WARNING, 1);
+define(STATE_CRITICAL, 2);
+define(STATE_UNKNOWN, 3);
+define(STATE_DEPENDENT, 4);
 
 
 $options = @getopt("H:t:v:s:");
